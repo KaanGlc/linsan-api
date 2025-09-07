@@ -8,6 +8,8 @@ export default async function handler(req, res) {
     return res.status(200).end();
   }
   // ⭐⭐⭐ CORS HEADERS BİTTİ ⭐⭐⭐
+import { MongoClient } from 'mongodb';
+  
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   
