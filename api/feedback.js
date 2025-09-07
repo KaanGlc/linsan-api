@@ -10,16 +10,6 @@ export default async function handler(req, res) {
   // ⭐⭐⭐ CORS HEADERS BİTTİ ⭐⭐⭐
 import { MongoClient } from 'mongodb';
 
-export default async function handler(req, res) {
-  // CORS headers
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
-
   if (req.method === 'POST') {
     try {
       const connectionString = process.env.MONGODB_URI;
