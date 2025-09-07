@@ -1,4 +1,27 @@
-import { MongoClient } from 'mongodb';
+// MongoDB connection'ı global yap (pooling için)
+let cachedClient = null;
+let cachedDb = null;
+
+async function connectToDatabase() {
+  if (cachedClient && cachedDb) {
+    return { client: cachedClient, db: cachedDb };
+  }
+
+  const client = new MongoClient(process.env.MONGODB_URI, {
+    serverSelectionTimeoutMS: 5000,
+    connectTimeoutMS: 5000,
+    maxPoolSize: 10,  // ⬅️ Connection pool
+    minPoolSize: 2    // ⬅️ Minimum connections
+  });
+
+  await client.connect();
+  const db = client.db('linsanapp');
+
+  cachedClient = client;
+  cachedDb = db;
+
+  return { client, db };
+}
 
 export default async function handler(req, res) {
   // CORS headers
@@ -12,21 +35,7 @@ export default async function handler(req, res) {
 
   if (req.method === 'POST') {
     try {
-      const connectionString = process.env.MONGODB_URI;
-      
-      if (!connectionString) {
-        return res.status(500).json({ error: 'Database configuration error' });
-      }
-
-      // MongoDB connection timeout ayarla
-      const client = new MongoClient(connectionString, {
-        serverSelectionTimeoutMS: 10000, // 10 saniye
-        connectTimeoutMS: 10000          // 10 saniye
-      });
-      
-      await client.connect();
-      
-      const db = client.db('linsanapp');
+      const { db, client } = await connectToDatabase();
       const collection = db.collection('feedbacks');
       
       const feedback = {
@@ -36,7 +45,7 @@ export default async function handler(req, res) {
       };
       
       await collection.insertOne(feedback);
-      await client.close();
+      // client.close() YAPMA - pooling için açık kalsın
       
       res.status(200).json({ status: 'success' });
     } catch (error) {
