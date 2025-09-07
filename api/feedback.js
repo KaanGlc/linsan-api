@@ -1,27 +1,4 @@
-// MongoDB connection'ı global yap (pooling için)
-let cachedClient = null;
-let cachedDb = null;
-
-async function connectToDatabase() {
-  if (cachedClient && cachedDb) {
-    return { client: cachedClient, db: cachedDb };
-  }
-
-  const client = new MongoClient(process.env.MONGODB_URI, {
-    serverSelectionTimeoutMS: 5000,
-    connectTimeoutMS: 5000,
-    maxPoolSize: 10,  // ⬅️ Connection pool
-    minPoolSize: 2    // ⬅️ Minimum connections
-  });
-
-  await client.connect();
-  const db = client.db('linsanapp');
-
-  cachedClient = client;
-  cachedDb = db;
-
-  return { client, db };
-}
+import { MongoClient } from 'mongodb';
 
 export default async function handler(req, res) {
   // CORS headers
@@ -33,24 +10,49 @@ export default async function handler(req, res) {
     return res.status(200).end();
   }
 
+  console.log('🔍 Feedback endpoint called - SIMPLIFIED');
+
   if (req.method === 'POST') {
     try {
-      const { db, client } = await connectToDatabase();
-      const collection = db.collection('feedbacks');
+      console.log('1. Checking environment...');
+      const connectionString = process.env.MONGODB_URI;
       
-      const feedback = {
-        ...req.body,
-        receivedAt: new Date(),
-        ip: req.headers['x-forwarded-for'] || req.connection.remoteAddress
-      };
+      if (!connectionString) {
+        console.error('❌ MONGODB_URI is MISSING');
+        return res.status(500).json({ error: 'MONGODB_URI missing' });
+      }
       
-      await collection.insertOne(feedback);
-      // client.close() YAPMA - pooling için açık kalsın
+      console.log('✅ MONGODB_URI found');
+
+      console.log('2. Creating client with SHORT timeout...');
+      const client = new MongoClient(connectionString, {
+        serverSelectionTimeoutMS: 5000, // 5 saniye
+        connectTimeoutMS: 5000,         // 5 saniye
+        socketTimeoutMS: 5000           // 5 saniye
+      });
+
+      console.log('3. Attempting connection (5s timeout)...');
+      await client.connect();
+      console.log('✅ MongoDB connected!');
+
+      // Hemen kapat ve response dön
+      await client.close();
       
-      res.status(200).json({ status: 'success' });
+      res.status(200).json({ 
+        status: 'success', 
+        message: 'MongoDB connection test successful'
+      });
+
     } catch (error) {
-      console.error('MongoDB Error:', error);
-      res.status(500).json({ error: error.message });
+      console.error('❌ MongoDB Connection FAILED:');
+      console.error('Error:', error.message);
+      console.error('Code:', error.code);
+      
+      res.status(500).json({ 
+        error: 'MongoDB connection failed',
+        message: error.message,
+        code: error.code
+      });
     }
   } else {
     res.status(405).json({ error: 'Method not allowed' });
