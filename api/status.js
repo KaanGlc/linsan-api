@@ -8,7 +8,7 @@ export default async function handler(req, res) {
     return res.status(200).end();
   }
   // ⭐⭐⭐ CORS HEADERS BİTTİ ⭐⭐⭐
-  
+import { MongoClient } from 'mongodb';
   if (req.method === 'GET') {
     try {
       res.status(200).json({
