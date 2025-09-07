@@ -1,12 +1,11 @@
 {
   "name": "linsan-api",
   "version": "1.0.0",
-  "description": "Linsan App Backend API for MongoDB connections",
+  "description": "Linsan App Backend API",
   "type": "module",
   "scripts": {
     "dev": "vercel dev",
-    "start": "vercel start", 
-    "build": "echo 'No build step needed for serverless functions'"
+    "start": "vercel start"
   },
   "dependencies": {
     "mongodb": "^6.3.0"
@@ -17,13 +16,5 @@
   "engines": {
     "node": "22.x"
   },
-  "keywords": [
-    "linsan",
-    "api",
-    "mongodb",
-    "vercel",
-    "serverless"
-  ],
-  "author": "Linsan Team",
-  "license": "MIT"
+  "packageManager": "npm@10.0.0"
 }
