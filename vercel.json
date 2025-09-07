@@ -10,11 +10,9 @@
     }
   ],
   "functions": {
-    "api/feedback.js": {
-      "maxDuration": 10
-    },
-    "api/updates.js": {
-      "maxDuration": 10
+    "api/*.js": {
+      "maxDuration": 10,
+      "runtime": "nodejs22.x"
     }
   }
 }
