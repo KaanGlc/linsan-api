@@ -11,8 +11,7 @@
   ],
   "functions": {
     "api/*.js": {
-      "maxDuration": 10,
-      "runtime": "nodejs22.x"
+      "maxDuration": 10
     }
   }
 }
