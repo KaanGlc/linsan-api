@@ -8,7 +8,7 @@ export default async function handler(req, res) {
     return res.status(200).end();
   }
   // ⭐⭐⭐ CORS HEADERS BİTTİ ⭐⭐⭐
-  import { MongoClient } from 'mongodb';
+import { MongoClient } from 'mongodb';
   try {
     const connectionString = process.env.MONGODB_URI;
     
