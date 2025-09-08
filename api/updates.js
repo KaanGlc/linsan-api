@@ -1,6 +1,21 @@
 // api/updates.js - ES6 Modules
+import semver from 'semver';
+import { MongoClient } from 'mongodb';
+
 export default async function handler(req, res) {
-  // ⭐⭐⭐ CORS HEADERS - BU SATIRLARI EKLEYİN ⭐⭐⭐
+  const clientVersion = req.body.current_version?.trim().toLowerCase().replace('v', '');
+  
+  const latestUpdate = await collection.findOne({}, { sort: { createdAt: -1 } });
+  const latestVersion = latestUpdate.version?.trim().toLowerCase().replace('v', '');
+
+  if (semver.gt(latestVersion, clientVersion)) {
+    res.status(200).json({ update_available: true, latest_version: latestVersion });
+  } else {
+    res.status(200).json({ update_available: false });
+  }
+}
+
+export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
@@ -8,8 +23,6 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
-  // ⭐⭐⭐ CORS HEADERS BİTTİ ⭐⭐⭐
-import { MongoClient } from 'mongodb';
   if (req.method === 'GET') {
     try {
       const connectionString = process.env.MONGODB_URI;
