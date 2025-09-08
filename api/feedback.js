@@ -1,5 +1,34 @@
-// api/feedback.js
 import { MongoClient } from 'mongodb';
+
+// Global cache (Vercel lambda instance başına)
+let cachedClient = null;
+let cachedDb = null;
+
+async function connectToDatabase() {
+  if (cachedClient && cachedDb) {
+    return { client: cachedClient, db: cachedDb };
+  }
+
+  const uri = process.env.MONGODB_URI;
+  if (!uri) {
+    throw new Error('❌ MONGODB_URI environment variable not set');
+  }
+
+  const client = new MongoClient(uri, {
+    serverSelectionTimeoutMS: 5000,
+    connectTimeoutMS: 5000,
+    maxPoolSize: 10,
+    minPoolSize: 2
+  });
+
+  await client.connect();
+  const db = client.db('linsanapp');
+
+  cachedClient = client;
+  cachedDb = db;
+
+  return { client, db };
+}
 
 export default async function handler(req, res) {
   // CORS
@@ -13,50 +42,28 @@ export default async function handler(req, res) {
 
   if (req.method === 'POST') {
     try {
-      const connectionString = process.env.MONGODB_URI;
-      if (!connectionString) {
-        return res.status(500).json({ error: 'MONGODB_URI missing' });
-      }
+      const { db } = await connectToDatabase();
+      const collection = db.collection('feedbacks');
 
-      // Gelen veriyi al
       const feedbackData = req.body;
       if (!feedbackData || typeof feedbackData !== 'object') {
         return res.status(400).json({ error: 'Invalid feedback payload' });
       }
 
-      // Zaman damgası ekle
-      feedbackData.created_at = new Date();
+      const feedback = {
+        ...feedbackData,
+        receivedAt: new Date(),
+        ip: req.headers['x-forwarded-for'] || req.connection?.remoteAddress || null
+      };
 
-      // MongoDB bağlantısı
-      const client = new MongoClient(connectionString, {
-        serverSelectionTimeoutMS: 5000,
-        connectTimeoutMS: 5000,
-        socketTimeoutMS: 5000
-      });
+      const result = await collection.insertOne(feedback);
 
-      await client.connect();
-      const db = client.db('linsanapp');
-      const collection = db.collection('feedbacks');
-
-      // Kaydet
-      const result = await collection.insertOne(feedbackData);
-
-      await client.close();
-
-      return res.status(200).json({
-        status: 'success',
-        inserted_id: result.insertedId,
-        message: 'Feedback saved successfully'
-      });
-
+      res.status(200).json({ status: 'success', insertedId: result.insertedId });
     } catch (error) {
-      console.error('❌ Feedback insert failed:', error);
-      return res.status(500).json({
-        error: 'MongoDB insert failed',
-        message: error.message
-      });
+      console.error('❌ MongoDB Error:', error);
+      res.status(500).json({ error: error.message });
     }
   } else {
-    return res.status(405).json({ error: 'Method not allowed' });
+    res.status(405).json({ error: 'Method not allowed' });
   }
 }
