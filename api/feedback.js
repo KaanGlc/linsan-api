@@ -1,60 +1,62 @@
+// api/feedback.js
 import { MongoClient } from 'mongodb';
 
 export default async function handler(req, res) {
-  // CORS headers
+  // CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  
+
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
 
-  console.log('🔍 Feedback endpoint called - SIMPLIFIED');
-
   if (req.method === 'POST') {
     try {
-      console.log('1. Checking environment...');
       const connectionString = process.env.MONGODB_URI;
-      
       if (!connectionString) {
-        console.error('❌ MONGODB_URI is MISSING');
         return res.status(500).json({ error: 'MONGODB_URI missing' });
       }
-      
-      console.log('✅ MONGODB_URI found');
 
-      console.log('2. Creating client with SHORT timeout...');
+      // Gelen veriyi al
+      const feedbackData = req.body;
+      if (!feedbackData || typeof feedbackData !== 'object') {
+        return res.status(400).json({ error: 'Invalid feedback payload' });
+      }
+
+      // Zaman damgası ekle
+      feedbackData.created_at = new Date();
+
+      // MongoDB bağlantısı
       const client = new MongoClient(connectionString, {
-        serverSelectionTimeoutMS: 5000, // 5 saniye
-        connectTimeoutMS: 5000,         // 5 saniye
-        socketTimeoutMS: 5000           // 5 saniye
+        serverSelectionTimeoutMS: 5000,
+        connectTimeoutMS: 5000,
+        socketTimeoutMS: 5000
       });
 
-      console.log('3. Attempting connection (5s timeout)...');
       await client.connect();
-      console.log('✅ MongoDB connected!');
+      const db = client.db('linsanapp');
+      const collection = db.collection('feedbacks');
 
-      // Hemen kapat ve response dön
+      // Kaydet
+      const result = await collection.insertOne(feedbackData);
+
       await client.close();
-      
-      res.status(200).json({ 
-        status: 'success', 
-        message: 'MongoDB connection test successful'
+
+      return res.status(200).json({
+        status: 'success',
+        inserted_id: result.insertedId,
+        message: 'Feedback saved successfully'
       });
 
     } catch (error) {
-      console.error('❌ MongoDB Connection FAILED:');
-      console.error('Error:', error.message);
-      console.error('Code:', error.code);
-      
-      res.status(500).json({ 
-        error: 'MongoDB connection failed',
-        message: error.message,
-        code: error.code
+      console.error('❌ Feedback insert failed:', error);
+      return res.status(500).json({
+        error: 'MongoDB insert failed',
+        message: error.message
       });
     }
   } else {
-    res.status(405).json({ error: 'Method not allowed' });
+    return res.status(405).json({ error: 'Method not allowed' });
   }
 }
