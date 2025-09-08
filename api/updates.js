@@ -2,11 +2,10 @@
 import { MongoClient } from 'mongodb';
 
 export default async function handler(req, res) {
-  // CORS
+  // CORS ayarları
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
@@ -16,30 +15,29 @@ export default async function handler(req, res) {
   }
 
   try {
-    const connectionString = process.env.MONGODB_URI;
-    if (!connectionString) {
+    const uri = process.env.MONGODB_URI;
+    if (!uri) {
       return res.status(500).json({ error: 'Database configuration error' });
     }
 
-    const client = new MongoClient(connectionString);
+    const client = new MongoClient(uri);
     await client.connect();
-    
     const db = client.db('linsanapp');
     const collection = db.collection('updates');
-    
-    // En son eklenen güncellemeyi bul
+
+    // En son güncellemeyi çek
     const updates = await collection
       .find({})
       .sort({ version: -1 })
       .limit(1)
       .toArray();
-    
+
     await client.close();
 
     // İstemciden gelen sürüm
-    const currentVersion = req.query.current_version || '';
+    const currentVersion = (req.query.current_version || '').trim();
 
-    // Eğer DB'de hiç kayıt yoksa:
+    // Eğer DB'de hiç güncelleme kaydı yoksa
     if (updates.length === 0) {
       return res.status(200).json({
         has_update: false,
@@ -49,10 +47,9 @@ export default async function handler(req, res) {
       });
     }
 
-    // DB'de kayıt varsa normal akış
+    // Aksi halde DB'deki en son sürümü kullan
     const latest = updates[0];
     const latestVersion = (latest.version || '').trim();
-
     const hasUpdate = currentVersion !== latestVersion;
 
     res.status(200).json({
@@ -61,7 +58,7 @@ export default async function handler(req, res) {
       download_url: latest.download_url || '',
       changelog: latest.changelog || ''
     });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 }
