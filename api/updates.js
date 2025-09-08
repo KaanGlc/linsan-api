@@ -34,42 +34,40 @@ export default async function handler(req, res) {
       .toArray();
     await client.close();
 
-    // Client'tan gelen sürüm
-    let currentVersion = (req.query.current_version || '').trim();
-    // DB'deki son sürüm (string)
-    let latestVersion = updates[0]?.version?.trim() || '';
+    // İstemci sürümü
+    const rawCurrent = (req.query.current_version || '').trim();
+    // DB’deki son sürüm
+    const rawLatest  = updates[0]?.version?.trim() || '';
 
-    // Kayıt yoksa client sürümüne eşitle
-    if (!updates.length) {
+    // Hiç kayıt yoksa direkt güncelleme yok
+    if (updates.length === 0) {
       return res.status(200).json({
         has_update: false,
-        latest_version: currentVersion,
+        latest_version: rawCurrent,
         download_url: '',
         changelog: ''
       });
     }
 
-    // Semver temizleme (örn. "v0.82" → "0.82")
-    const cleanCurrent = semver.clean(currentVersion) || currentVersion;
-    const cleanLatest  = semver.clean(latestVersion)  || latestVersion;
+    // Semver’e uyarlanmış hale getir
+    const curSem = semver.coerce(rawCurrent);
+    const latSem = semver.coerce(rawLatest);
 
-    // Sürüm geçerliliği kontrolü
-    let hasUpdate;
-    if (semver.valid(cleanCurrent) && semver.valid(cleanLatest)) {
-      // Gerçek semver karşılaştırması
-      hasUpdate = semver.gt(cleanLatest, cleanCurrent);
+    // Gerçek semver karşılaştırması
+    let hasUpdate = false;
+    if (curSem && latSem) {
+      hasUpdate = semver.gt(latSem, curSem);
     } else {
-      // Fallback: string eşitsizliği
-      hasUpdate = cleanCurrent !== cleanLatest;
+      // Fallback
+      hasUpdate = rawLatest !== rawCurrent;
     }
 
     return res.status(200).json({
       has_update: hasUpdate,
-      latest_version: cleanLatest,
+      latest_version: rawLatest,
       download_url: updates[0].download_url || '',
       changelog: updates[0].changelog || ''
     });
-
   } catch (err) {
     return res.status(500).json({ error: err.message });
   }
