@@ -36,7 +36,7 @@ export default async function handler(req, res) {
 
     // İstemci sürümü
     const rawCurrent = (req.query.current_version || '').trim();
-    // DB’deki son sürüm
+    // DB'deki son sürüm
     const rawLatest  = updates[0]?.version?.trim() || '';
 
     // Hiç kayıt yoksa direkt güncelleme yok
@@ -49,16 +49,18 @@ export default async function handler(req, res) {
       });
     }
 
-    // Semver’e uyarlanmış hale getir
+    // Semver'e uyarlanmış hale getir
     const curSem = semver.coerce(rawCurrent);
     const latSem = semver.coerce(rawLatest);
 
-    // Gerçek semver karşılaştırması
+    // Gerçek semver karşılaştırması - BURAYI DEĞİŞTİRDİK
     let hasUpdate = false;
     if (curSem && latSem) {
-      hasUpdate = semver.gt(latSem, curSem);
+      // SADECE en son sürüm daha büyükse güncelleme göster
+      const shouldUpdate = semver.gt(latSem, curSem);
+      hasUpdate = shouldUpdate;
     } else {
-      // Fallback
+      // Fallback - sürümler farklıysa güncelleme var say
       hasUpdate = rawLatest !== rawCurrent;
     }
 
