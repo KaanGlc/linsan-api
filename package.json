@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "mongodb": "^6.3.0",
-    "semver": "^7.5.4"
+    "semver": "^7.7.2"
   },
   "devDependencies": {
     "vercel": "^35.0.0"
