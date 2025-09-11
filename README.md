@@ -33,5 +33,5 @@
 
 Linsan, hem bireysel öğrenme hem de kullanıcı geri bildirimleriyle gelişen bir sistem olarak İngilizce kelime pratiğini daha etkili hale getirmeyi amaçlar.
 
-### NOT: Bu bir apidir, ana uygulama s. kodları bulunmamaktadır.
+### NOT: Bu bir apidir, ana uygulamanınn source kodları bulunmamaktadır.
 ---
