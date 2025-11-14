@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Linsan Admin</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .login-container {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            width: 400px;
+            max-width: 90%;
+        }
+        .logo { text-align: center; margin-bottom: 30px; }
+        .logo h1 { color: #667eea; font-size: 32px; margin-bottom: 10px; }
+        .logo p { color: #6c757d; font-size: 14px; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; color: #495057; font-weight: 600; font-size: 14px; }
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        .form-group input:focus { outline: none; border-color: #667eea; }
+        .login-btn {
+            width: 100%;
+            padding: 12px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .login-btn:hover { background: #5568d3; }
+        .error { background: #ffebee; color: #c62828; padding: 10px; border-radius: 8px; margin-bottom: 20px; font-size: 14px; display: none; }
+        .dashboard { display: none; width: 100%; max-width: 1400px; background: white; border-radius: 15px; overflow: hidden; }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; display: flex; justify-content: space-between; align-items: center; }
+        .logout-btn { background: rgba(255,255,255,0.2); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; }
+        .stats { display: flex; justify-content: space-around; padding: 20px; background: #f8f9fa; }
+        .stat-card { text-align: center; padding: 15px 30px; background: white; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .stat-card h3 { color: #667eea; font-size: 36px; }
+        .filters { padding: 20px; background: #f8f9fa; display: flex; gap: 15px; flex-wrap: wrap; }
+        select, input[type="text"] { padding: 10px 15px; border: 2px solid #e9ecef; border-radius: 8px; }
+        .feedback-list { padding: 20px; max-height: 600px; overflow-y: auto; }
+        .feedback-card { background: white; border: 2px solid #e9ecef; border-radius: 12px; padding: 20px; margin-bottom: 15px; }
+        .feedback-type { display: inline-block; padding: 5px 15px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+        .type-kelime { background: #e3f2fd; color: #1976d2; }
+        .type-bug { background: #ffebee; color: #c62828; }
+        .feedback-word { font-size: 24px; font-weight: bold; color: #667eea; margin: 10px 0; }
+        .feedback-message { padding: 15px; background: #f8f9fa; border-radius: 8px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <div class="login-container" id="loginScreen">
+        <div class="logo">
+            <h1>📊 Linsan Admin</h1>
+            <p>Geri Bildirim Yönetimi</p>
+        </div>
+        <div class="error" id="errorMsg">Hatalı giriş!</div>
+        <form id="loginForm">
+            <div class="form-group">
+                <label>Kullanıcı Adı</label>
+                <input type="text" id="username" required>
+            </div>
+            <div class="form-group">
+                <label>Şifre</label>
+                <input type="password" id="password" required>
+            </div>
+            <button type="submit" class="login-btn">Giriş</button>
+        </form>
+    </div>
+    
+    <div class="dashboard" id="dashboard">
+        <div class="header">
+            <h1>Linsan Admin</h1>
+            <button class="logout-btn" onclick="logout()">Çıkış</button>
+        </div>
+        <div class="stats">
+            <div class="stat-card"><h3 id="totalCount">0</h3><p>Toplam</p></div>
+            <div class="stat-card"><h3 id="todayCount">0</h3><p>Bugün</p></div>
+            <div class="stat-card"><h3 id="wordCount">0</h3><p>Kelime</p></div>
+        </div>
+        <div class="filters">
+            <select id="typeFilter" onchange="displayFeedbacks()">
+                <option value="">Tümü</option>
+                <option value="kelime">Kelime</option>
+                <option value="bug">Bug</option>
+            </select>
+            <input type="text" id="wordSearch" placeholder="Ara..." oninput="displayFeedbacks()">
+            <button onclick="loadFeedbacks()">🔄 Yenile</button>
+        </div>
+        <div class="feedback-list" id="feedbackList"></div>
+    </div>
+    
+    <script>
+        const API_URL = '/api/feedbacks';
+        let allFeedbacks = [];
+        
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            if (document.getElementById('username').value === 'admin' && 
+                document.getElementById('password').value === 'linsan2024') {
+                sessionStorage.setItem('loggedIn', 'true');
+                showDashboard();
+            } else {
+                document.getElementById('errorMsg').style.display = 'block';
+            }
+        });
+        
+        function showDashboard() {
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('dashboard').style.display = 'block';
+            loadFeedbacks();
+        }
+        
+        function logout() {
+            sessionStorage.removeItem('loggedIn');
+            location.reload();
+        }
+        
+        if (sessionStorage.getItem('loggedIn') === 'true') showDashboard();
+        
+        async function loadFeedbacks() {
+            const response = await fetch(API_URL);
+            const data = await response.json();
+            allFeedbacks = data.feedbacks || [];
+            updateStats();
+            displayFeedbacks();
+        }
+        
+        function updateStats() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('totalCount').textContent = allFeedbacks.length;
+            document.getElementById('todayCount').textContent = allFeedbacks.filter(f => f.receivedAt?.startsWith(today)).length;
+            document.getElementById('wordCount').textContent = allFeedbacks.filter(f => f.type === 'kelime').length;
+        }
+        
+        function displayFeedbacks() {
+            const type = document.getElementById('typeFilter').value;
+            const search = document.getElementById('wordSearch').value.toLowerCase();
+            const filtered = allFeedbacks.filter(f => {
+                if (type && f.type !== type) return false;
+                if (search && !f.user_data?.word?.toLowerCase().includes(search)) return false;
+                return true;
+            });
+            
+            document.getElementById('feedbackList').innerHTML = filtered.map(f => `
+                <div class="feedback-card">
+                    <span class="feedback-type type-${f.type}">${f.type}</span>
+                    ${f.user_data?.word ? `<div class="feedback-word">${f.user_data.word}</div>` : ''}
+                    <div class="feedback-message">${f.message}</div>
+                    <small>${new Date(f.receivedAt).toLocaleString('tr-TR')}</small>
+                </div>
+            `).join('');
+        }
+        
+        setInterval(() => { if (sessionStorage.getItem('loggedIn') === 'true') loadFeedbacks(); }, 30000);
+    </script>
+</body>
+</html>
