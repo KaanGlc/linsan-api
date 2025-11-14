@@ -6,39 +6,76 @@
     <title>Linsan Admin</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        :root {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8f9fa;
+            --bg-card: #ffffff;
+            --text-primary: #212529;
+            --text-secondary: #6c757d;
+            --border-color: #e9ecef;
+            --gradient-start: #667eea;
+            --gradient-end: #764ba2;
+            --shadow: rgba(0,0,0,0.1);
+        }
+        
+        [data-theme="dark"] {
+            --bg-primary: #1a1a1a;
+            --bg-secondary: #2d2d2d;
+            --bg-card: #242424;
+            --text-primary: #e9ecef;
+            --text-secondary: #adb5bd;
+            --border-color: #404040;
+            --shadow: rgba(0,0,0,0.3);
+        }
+        
         body {
             font-family: 'Segoe UI', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
+            color: var(--text-primary);
+            transition: all 0.3s ease;
         }
+        
         .login-container {
-            background: white;
+            background: var(--bg-primary);
             padding: 40px;
             border-radius: 15px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            box-shadow: 0 20px 60px var(--shadow);
             width: 400px;
             max-width: 90%;
         }
+        
         .logo { text-align: center; margin-bottom: 30px; }
-        .logo h1 { color: #667eea; font-size: 32px; margin-bottom: 10px; }
-        .logo p { color: #6c757d; font-size: 14px; }
+        .logo h1 { color: var(--gradient-start); font-size: 32px; margin-bottom: 10px; }
+        .logo p { color: var(--text-secondary); font-size: 14px; }
+        
         .form-group { margin-bottom: 20px; }
-        .form-group label { display: block; margin-bottom: 8px; color: #495057; font-weight: 600; font-size: 14px; }
+        .form-group label { 
+            display: block; 
+            margin-bottom: 8px; 
+            color: var(--text-primary); 
+            font-weight: 600; 
+            font-size: 14px; 
+        }
         .form-group input {
             width: 100%;
             padding: 12px 15px;
-            border: 2px solid #e9ecef;
+            border: 2px solid var(--border-color);
             border-radius: 8px;
             font-size: 14px;
+            background: var(--bg-primary);
+            color: var(--text-primary);
         }
-        .form-group input:focus { outline: none; border-color: #667eea; }
+        .form-group input:focus { outline: none; border-color: var(--gradient-start); }
+        
         .login-btn {
             width: 100%;
             padding: 12px;
-            background: #667eea;
+            background: var(--gradient-start);
             color: white;
             border: none;
             border-radius: 8px;
@@ -47,22 +84,144 @@
             cursor: pointer;
         }
         .login-btn:hover { background: #5568d3; }
-        .error { background: #ffebee; color: #c62828; padding: 10px; border-radius: 8px; margin-bottom: 20px; font-size: 14px; display: none; }
-        .dashboard { display: none; width: 100%; max-width: 1400px; background: white; border-radius: 15px; overflow: hidden; }
-        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; display: flex; justify-content: space-between; align-items: center; }
-        .logout-btn { background: rgba(255,255,255,0.2); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; }
-        .stats { display: flex; justify-content: space-around; padding: 20px; background: #f8f9fa; }
-        .stat-card { text-align: center; padding: 15px 30px; background: white; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .stat-card h3 { color: #667eea; font-size: 36px; }
-        .filters { padding: 20px; background: #f8f9fa; display: flex; gap: 15px; flex-wrap: wrap; }
-        select, input[type="text"] { padding: 10px 15px; border: 2px solid #e9ecef; border-radius: 8px; }
-        .feedback-list { padding: 20px; max-height: 600px; overflow-y: auto; }
-        .feedback-card { background: white; border: 2px solid #e9ecef; border-radius: 12px; padding: 20px; margin-bottom: 15px; }
-        .feedback-type { display: inline-block; padding: 5px 15px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+        
+        .error { 
+            background: #ffebee; 
+            color: #c62828; 
+            padding: 10px; 
+            border-radius: 8px; 
+            margin-bottom: 20px; 
+            font-size: 14px; 
+            display: none; 
+        }
+        
+        .dashboard { 
+            display: none; 
+            width: 100%; 
+            max-width: 1400px; 
+            background: var(--bg-primary); 
+            border-radius: 15px; 
+            overflow: hidden; 
+        }
+        
+        .header { 
+            background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%); 
+            color: white; 
+            padding: 30px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+        }
+        
+        .header-actions { display: flex; gap: 10px; }
+        
+        .theme-toggle, .logout-btn { 
+            background: rgba(255,255,255,0.2); 
+            color: white; 
+            border: none; 
+            padding: 10px 20px; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-size: 18px;
+        }
+        
+        .stats { 
+            display: flex; 
+            justify-content: space-around; 
+            padding: 20px; 
+            background: var(--bg-secondary); 
+        }
+        
+        .stat-card { 
+            text-align: center; 
+            padding: 15px 30px; 
+            background: var(--bg-card); 
+            border-radius: 10px; 
+            box-shadow: 0 2px 10px var(--shadow); 
+        }
+        .stat-card h3 { color: var(--gradient-start); font-size: 36px; }
+        .stat-card p { color: var(--text-secondary); }
+        
+        .filters { 
+            padding: 20px; 
+            background: var(--bg-secondary); 
+            display: flex; 
+            gap: 15px; 
+            flex-wrap: wrap; 
+        }
+        
+        select, input[type="text"], input[type="date"] { 
+            padding: 10px 15px; 
+            border: 2px solid var(--border-color); 
+            border-radius: 8px;
+            background: var(--bg-card);
+            color: var(--text-primary);
+        }
+        
+        .filter-btn {
+            padding: 10px 20px;
+            background: var(--gradient-start);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        
+        .feedback-list { 
+            padding: 20px; 
+            max-height: 600px; 
+            overflow-y: auto; 
+            background: var(--bg-secondary);
+        }
+        
+        .feedback-card { 
+            background: var(--bg-card); 
+            border: 2px solid var(--border-color); 
+            border-radius: 12px; 
+            padding: 20px; 
+            margin-bottom: 15px; 
+        }
+        
+        .feedback-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        
+        .feedback-type { 
+            display: inline-block; 
+            padding: 5px 15px; 
+            border-radius: 20px; 
+            font-size: 12px; 
+            font-weight: 600; 
+        }
+        
         .type-kelime { background: #e3f2fd; color: #1976d2; }
+        .type-anlam { background: #f3e5f5; color: #7b1fa2; }
         .type-bug { background: #ffebee; color: #c62828; }
-        .feedback-word { font-size: 24px; font-weight: bold; color: #667eea; margin: 10px 0; }
-        .feedback-message { padding: 15px; background: #f8f9fa; border-radius: 8px; margin: 10px 0; }
+        .type-öneri { background: #e8f5e9; color: #2e7d32; }
+        .type-soru { background: #fff3e0; color: #e65100; }
+        .type-diğer { background: #f5f5f5; color: #616161; }
+        .type-örnek { background: #fce4ec; color: #c2185b; }
+        
+        .feedback-word { 
+            font-size: 24px; 
+            font-weight: bold; 
+            color: var(--gradient-start); 
+            margin: 10px 0; 
+        }
+        
+        .feedback-message { 
+            padding: 15px; 
+            background: var(--bg-secondary); 
+            border-radius: 8px; 
+            margin: 10px 0;
+            color: var(--text-primary);
+        }
+        
+        .feedback-meta {
+            display: flex;
+            gap: 15px;
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
@@ -88,39 +247,108 @@
     <div class="dashboard" id="dashboard">
         <div class="header">
             <h1>Linsan Admin</h1>
-            <button class="logout-btn" onclick="logout()">Çıkış</button>
+            <div class="header-actions">
+                <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+                <button class="logout-btn" onclick="logout()">Çıkış</button>
+            </div>
         </div>
         <div class="stats">
             <div class="stat-card"><h3 id="totalCount">0</h3><p>Toplam</p></div>
             <div class="stat-card"><h3 id="todayCount">0</h3><p>Bugün</p></div>
+            <div class="stat-card"><h3 id="weekCount">0</h3><p>Bu Hafta</p></div>
             <div class="stat-card"><h3 id="wordCount">0</h3><p>Kelime</p></div>
         </div>
         <div class="filters">
             <select id="typeFilter" onchange="displayFeedbacks()">
-                <option value="">Tümü</option>
+                <option value="">Tüm Türler</option>
                 <option value="kelime">Kelime</option>
+                <option value="anlam">Anlam</option>
                 <option value="bug">Bug</option>
+                <option value="öneri">Öneri</option>
+                <option value="soru">Soru</option>
+                <option value="diğer">Diğer</option>
+                <option value="örnek cümle">Örnek Cümle</option>
             </select>
-            <input type="text" id="wordSearch" placeholder="Ara..." oninput="displayFeedbacks()">
-            <button onclick="loadFeedbacks()">🔄 Yenile</button>
+            <input type="text" id="wordSearch" placeholder="Kelime ara..." oninput="displayFeedbacks()">
+            <input type="date" id="dateFrom" onchange="displayFeedbacks()">
+            <input type="date" id="dateTo" onchange="displayFeedbacks()">
+            <select id="sortOrder" onchange="displayFeedbacks()">
+                <option value="desc">Yeniden Eskiye</option>
+                <option value="asc">Eskiden Yeniye</option>
+            </select>
+            <button class="filter-btn" onclick="loadFeedbacks()">🔄 Yenile</button>
         </div>
         <div class="feedback-list" id="feedbackList"></div>
     </div>
     
     <script>
-        const API_URL = '/api/feedbacks';
+        const API_URL = '/api';
         let allFeedbacks = [];
+        let authToken = localStorage.getItem('authToken');
         
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
+        function initTheme() {
+            const theme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', theme);
+            updateThemeIcon();
+        }
+        
+        function toggleTheme() {
+            const current = document.documentElement.getAttribute('data-theme');
+            const newTheme = current === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateThemeIcon();
+        }
+        
+        function updateThemeIcon() {
+            const theme = document.documentElement.getAttribute('data-theme');
+            document.querySelector('.theme-toggle').textContent = theme === 'dark' ? '☀️' : '🌙';
+        }
+        
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            if (document.getElementById('username').value === 'admin' && 
-                document.getElementById('password').value === 'linsan2024') {
-                sessionStorage.setItem('loggedIn', 'true');
-                showDashboard();
-            } else {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            try {
+                const response = await fetch(`${API_URL}/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    authToken = data.token;
+                    localStorage.setItem('authToken', authToken);
+                    localStorage.setItem('username', data.username);
+                    showDashboard();
+                } else {
+                    document.getElementById('errorMsg').style.display = 'block';
+                }
+            } catch (error) {
+                document.getElementById('errorMsg').textContent = 'Bağlantı hatası!';
                 document.getElementById('errorMsg').style.display = 'block';
             }
         });
+        
+        async function verifySession() {
+            if (!authToken) return false;
+            
+            try {
+                const response = await fetch(`${API_URL}/verify-session`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ token: authToken })
+                });
+                
+                const data = await response.json();
+                return data.valid;
+            } catch {
+                return false;
+            }
+        }
         
         function showDashboard() {
             document.getElementById('loginScreen').style.display = 'none';
@@ -129,47 +357,103 @@
         }
         
         function logout() {
-            sessionStorage.removeItem('loggedIn');
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('username');
+            authToken = null;
             location.reload();
         }
         
-        if (sessionStorage.getItem('loggedIn') === 'true') showDashboard();
-        
         async function loadFeedbacks() {
-            const response = await fetch(API_URL);
-            const data = await response.json();
-            allFeedbacks = data.feedbacks || [];
-            updateStats();
-            displayFeedbacks();
+            try {
+                const response = await fetch(`${API_URL}/feedbacks`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                
+                if (response.status === 401) {
+                    logout();
+                    return;
+                }
+                
+                const data = await response.json();
+                allFeedbacks = data.feedbacks || [];
+                updateStats();
+                displayFeedbacks();
+            } catch (error) {
+                console.error('Yükleme hatası:', error);
+            }
         }
         
         function updateStats() {
-            const today = new Date().toISOString().split('T')[0];
+            const now = new Date();
+            const today = now.toISOString().split('T')[0];
+            const weekAgo = new Date(now - 7 * 24 * 60 * 60 * 1000);
+            
             document.getElementById('totalCount').textContent = allFeedbacks.length;
-            document.getElementById('todayCount').textContent = allFeedbacks.filter(f => f.receivedAt?.startsWith(today)).length;
-            document.getElementById('wordCount').textContent = allFeedbacks.filter(f => f.type === 'kelime').length;
+            document.getElementById('todayCount').textContent = allFeedbacks.filter(f => 
+                f.receivedAt?.startsWith(today)
+            ).length;
+            document.getElementById('weekCount').textContent = allFeedbacks.filter(f => 
+                new Date(f.receivedAt) >= weekAgo
+            ).length;
+            document.getElementById('wordCount').textContent = allFeedbacks.filter(f => 
+                f.type === 'kelime' || f.user_data?.word
+            ).length;
         }
         
         function displayFeedbacks() {
             const type = document.getElementById('typeFilter').value;
             const search = document.getElementById('wordSearch').value.toLowerCase();
-            const filtered = allFeedbacks.filter(f => {
+            const dateFrom = document.getElementById('dateFrom').value;
+            const dateTo = document.getElementById('dateTo').value;
+            const sortOrder = document.getElementById('sortOrder').value;
+            
+            let filtered = allFeedbacks.filter(f => {
                 if (type && f.type !== type) return false;
-                if (search && !f.user_data?.word?.toLowerCase().includes(search)) return false;
+                if (search && !f.user_data?.word?.toLowerCase().includes(search) && 
+                    !f.message?.toLowerCase().includes(search)) return false;
+                if (dateFrom && f.receivedAt < dateFrom) return false;
+                if (dateTo && f.receivedAt > dateTo + 'T23:59:59') return false;
                 return true;
+            });
+            
+            filtered.sort((a, b) => {
+                const dateA = new Date(a.receivedAt);
+                const dateB = new Date(b.receivedAt);
+                return sortOrder === 'desc' ? dateB - dateA : dateA - dateB;
             });
             
             document.getElementById('feedbackList').innerHTML = filtered.map(f => `
                 <div class="feedback-card">
-                    <span class="feedback-type type-${f.type}">${f.type}</span>
+                    <div class="feedback-header">
+                        <span class="feedback-type type-${f.type}">${f.type}</span>
+                        <span style="color: var(--text-secondary); font-size: 12px;">
+                            v${f.version || 'N/A'}
+                        </span>
+                    </div>
                     ${f.user_data?.word ? `<div class="feedback-word">${f.user_data.word}</div>` : ''}
                     <div class="feedback-message">${f.message}</div>
-                    <small>${new Date(f.receivedAt).toLocaleString('tr-TR')}</small>
+                    <div class="feedback-meta">
+                        <span>📅 ${new Date(f.receivedAt).toLocaleString('tr-TR')}</span>
+                        ${f.user_data?.category ? `<span>📂 ${f.user_data.category}</span>` : ''}
+                        ${f.user_data?.mode ? `<span>🎮 ${f.user_data.mode}</span>` : ''}
+                    </div>
                 </div>
             `).join('');
         }
         
-        setInterval(() => { if (sessionStorage.getItem('loggedIn') === 'true') loadFeedbacks(); }, 30000);
+        initTheme();
+        
+        (async () => {
+            if (authToken && await verifySession()) {
+                showDashboard();
+            }
+        })();
+        
+        setInterval(() => { 
+            if (authToken && document.getElementById('dashboard').style.display === 'block') {
+                loadFeedbacks(); 
+            }
+        }, 30000);
     </script>
 </body>
 </html>

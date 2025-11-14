@@ -1,37 +1,37 @@
-# Linsan – İngilizce Kelime Quiz Uygulaması Api
+# Linsan API
 
-**Linsan**, İngilizce kelime öğrenimini kolaylaştırmak için geliştirilmiş iki modlu bir quiz uygulamasıdır. Hem temel kelimeleri öğrenmek isteyenler hem de dizi repliklerinden gerçek hayata dair ifadeleri keşfetmek isteyen kullanıcılar için özel içerikler sunar.
+## Kurulum
 
-## Özellikler
+1. `.env` dosyası oluştur ve gerekli değişkenleri ekle:
+```
+MONGODB_URI=mongodb+srv://...
+SALT=random-salt-string
+MASTER_KEY=master-key-for-admin-creation
+```
 
-- **Klasik Mod**: Kullanıcıdan kelimenin anlamını yazması istenir.
-- **Çoktan Seçmeli Mod**: Doğru anlamı seçenekler arasından bulması beklenir.
-- Her iki modda da örnek cümleler ve ipuçlarıyla öğrenme süreci desteklenir.
+2. İlk admin kullanıcısını oluştur:
+```bash
+curl -X POST https://your-domain.vercel.app/api/create-admin \
+  -H "Content-Type: application/json" \
+  -d '{
+    "masterKey": "your-master-key",
+    "username": "admin",
+    "password": "secure-password"
+  }'
+```
 
-## Sunucu Bağlantısı
+## API Endpoints
 
-- Uygulama artık sunucu ile aktif bağlantı kurabiliyor.
-- Güncel içerikler alınabiliyor ve kullanıcıdan gelen veriler sunucuya gönderilebiliyor.
+- `POST /api/login` - Admin girişi
+- `POST /api/verify-session` - Session doğrulama
+- `POST /api/create-admin` - Yeni admin oluşturma (master key gerekli)
+- `GET /api/feedbacks` - Geri bildirimleri listele (token gerekli)
+- `POST /api/feedback` - Geri bildirim gönder
+- `GET /api/updates` - Güncelleme kontrolü
+- `GET /api/status` - Sunucu durumu
 
-## Geri Bildirim Sistemi
+## Güvenlik
 
-- Kullanıcılar uygulama içinden doğrudan geri bildirim gönderebilir.
-- Öneri, hata bildirimi veya yorumlar geliştiriciye iletilir.
-
-## Güncelleme Sistemi
-
-- Uygulama açıldığında otomatik olarak güncelleme kontrolü yapılır.
-- Yeni sürüm varsa kullanıcıya bildirim gösterilir.
-- Güncelleme dosyası doğrudan uygulama içinden indirilebilir, tarayıcıya yönlendirme yapılmaz.
-
-## Arayüz ve Kullanım
-
-- Arayüz sade, akıcı ve kullanıcı dostu olacak şekilde tasarlanmıştır.
-- Görsel düzen ve kullanım kolaylığı ön planda tutulmuştur.
-
----
-
-Linsan, hem bireysel öğrenme hem de kullanıcı geri bildirimleriyle gelişen bir sistem olarak İngilizce kelime pratiğini daha etkili hale getirmeyi amaçlar.
-
-### NOT: Bu bir apidir, ana uygulamanınn source kodları bulunmamaktadır.
----
+- Şifreler SHA-256 ile hash'leniyor
+- Session token'lar 24 saat geçerli
+- Admin paneli token bazlı korumalı

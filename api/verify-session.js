@@ -12,23 +12,19 @@ async function getDb() {
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
 
-  if (req.method !== 'GET') {
+  if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
   try {
-    const token = req.headers.authorization?.replace('Bearer ', '');
-    if (!token) {
-      return res.status(401).json({ error: 'Unauthorized' });
-    }
-
+    const { token } = req.body;
     const db = await getDb();
     
     const session = await db.collection('sessions').findOne({ 
@@ -36,21 +32,11 @@ export default async function handler(req, res) {
       expiresAt: { $gt: new Date() }
     });
 
-    if (!session) {
-      return res.status(401).json({ error: 'Invalid or expired token' });
+    if (session) {
+      return res.status(200).json({ valid: true, username: session.username });
     }
 
-    const feedbacks = await db.collection('feedbacks')
-      .find({})
-      .sort({ receivedAt: -1 })
-      .limit(100)
-      .toArray();
-
-    return res.status(200).json({
-      success: true,
-      feedbacks: feedbacks,
-      count: feedbacks.length
-    });
+    return res.status(401).json({ valid: false });
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }
