@@ -1,12 +1,21 @@
-// api/updates.js
 import { MongoClient } from 'mongodb';
 import semver from 'semver';
 
+let client = null;
+
+async function getDb() {
+  if (!client) {
+    client = new MongoClient(process.env.MONGODB_URI);
+    await client.connect();
+  }
+  return client.db('linsanapp');
+}
+
 export default async function handler(req, res) {
-  // CORS ayarları
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
@@ -16,61 +25,31 @@ export default async function handler(req, res) {
   }
 
   try {
-    const uri = process.env.MONGODB_URI;
-    if (!uri) {
-      return res.status(500).json({ error: 'Database configuration error' });
-    }
-
-    const client = new MongoClient(uri);
-    await client.connect();
-    const db = client.db('linsanapp');
-    const collection = db.collection('updates');
-
-    // En son sürümü al
-    const updates = await collection
+    const db = await getDb();
+    const updates = await db.collection('updates')
       .find({})
       .sort({ version: -1 })
       .limit(1)
       .toArray();
-    await client.close();
 
-    // İstemci sürümü
-    const rawCurrent = (req.query.current_version || '').trim();
-    // DB'deki son sürüm
-    const rawLatest  = updates[0]?.version?.trim() || '';
-
-    // Hiç kayıt yoksa direkt güncelleme yok
     if (updates.length === 0) {
       return res.status(200).json({
         has_update: false,
-        latest_version: rawCurrent,
-        download_url: '',
-        changelog: ''
+        latest_version: req.query.current_version || '0.0.0'
       });
     }
 
-    // Semver'e uyarlanmış hale getir
-    const curSem = semver.coerce(rawCurrent);
-    const latSem = semver.coerce(rawLatest);
-
-    // Gerçek semver karşılaştırması - BURAYI DEĞİŞTİRDİK
-    let hasUpdate = false;
-    if (curSem && latSem) {
-      // SADECE en son sürüm daha büyükse güncelleme göster
-      const shouldUpdate = semver.gt(latSem, curSem);
-      hasUpdate = shouldUpdate;
-    } else {
-      // Fallback - sürümler farklıysa güncelleme var say
-      hasUpdate = rawLatest !== rawCurrent;
-    }
+    const currentVersion = req.query.current_version || '0.0.0';
+    const latestVersion = updates[0].version;
+    const hasUpdate = semver.gt(semver.coerce(latestVersion), semver.coerce(currentVersion));
 
     return res.status(200).json({
       has_update: hasUpdate,
-      latest_version: rawLatest,
+      latest_version: latestVersion,
       download_url: updates[0].download_url || '',
       changelog: updates[0].changelog || ''
     });
-  } catch (err) {
-    return res.status(500).json({ error: err.message });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
   }
 }
