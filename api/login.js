@@ -32,6 +32,10 @@ export default async function handler(req, res) {
     const { username, password } = req.body;
     const db = await getDb();
     
+    console.log('SALT:', process.env.SALT);
+    console.log('Input password:', password);
+    console.log('Hashed:', hashPassword(password));
+    
     const admin = await db.collection('admins').findOne({ 
       username,
       password: hashPassword(password)
