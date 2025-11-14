@@ -38,6 +38,10 @@ export default async function handler(req, res) {
 
     const db = await getDb();
     
+    console.log('CREATE - SALT:', process.env.SALT);
+    console.log('CREATE - Password:', password);
+    console.log('CREATE - Hashed:', hashPassword(password));
+    
     // Kullanıcı zaten var mı?
     const existing = await db.collection('admins').findOne({ username });
     if (existing) {
