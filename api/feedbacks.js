@@ -3,7 +3,6 @@ import { MongoClient } from 'mongodb';
 let cachedClient = null;
 let cachedDb = null;
 
-
 async function connectToDatabase() {
   if (cachedClient && cachedDb) {
     return { client: cachedClient, db: cachedDb };
@@ -31,10 +30,11 @@ async function connectToDatabase() {
 }
 
 export default async function handler(req, res) {
-  // CORS
+  // CORS - Daha geniş izinler
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type, Accept, Origin, Authorization');
+  res.setHeader('Access-Control-Max-Age', '86400');
 
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
