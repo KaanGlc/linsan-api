@@ -3,6 +3,7 @@ import { MongoClient } from 'mongodb';
 let cachedClient = null;
 let cachedDb = null;
 
+
 async function connectToDatabase() {
   if (cachedClient && cachedDb) {
     return { client: cachedClient, db: cachedDb };
