@@ -12,9 +12,7 @@ async function getDb() {
 }
 
 function hashPassword(password) {
-  const salt = process.env.SALT || 'comolokko_kaan';
-  console.log('Using SALT:', salt);
-  return crypto.createHash('sha256').update(password + salt).digest('hex');
+  return crypto.createHash('sha256').update(password + process.env.SALT).digest('hex');
 }
 
 export default async function handler(req, res) {
@@ -39,10 +37,6 @@ export default async function handler(req, res) {
     }
 
     const db = await getDb();
-    
-    console.log('CREATE - SALT:', process.env.SALT);
-    console.log('CREATE - Password:', password);
-    console.log('CREATE - Hashed:', hashPassword(password));
     
     // Kullanıcı zaten var mı?
     const existing = await db.collection('admins').findOne({ username });

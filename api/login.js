@@ -12,9 +12,7 @@ async function getDb() {
 }
 
 function hashPassword(password) {
-  const salt = process.env.SALT || 'comolokko_kaan';
-  console.log('Using SALT:', salt);
-  return crypto.createHash('sha256').update(password + salt).digest('hex');
+  return crypto.createHash('sha256').update(password + process.env.SALT).digest('hex');
 }
 
 export default async function handler(req, res) {
@@ -33,10 +31,6 @@ export default async function handler(req, res) {
   try {
     const { username, password } = req.body;
     const db = await getDb();
-    
-    console.log('SALT:', process.env.SALT);
-    console.log('Input password:', password);
-    console.log('Hashed:', hashPassword(password));
     
     const admin = await db.collection('admins').findOne({ 
       username,
