@@ -12,7 +12,9 @@ async function getDb() {
 }
 
 function hashPassword(password) {
-  return crypto.createHash('sha256').update(password + process.env.SALT).digest('hex');
+  const salt = process.env.SALT || 'comolokko_kaan';
+  console.log('Using SALT:', salt);
+  return crypto.createHash('sha256').update(password + salt).digest('hex');
 }
 
 export default async function handler(req, res) {
