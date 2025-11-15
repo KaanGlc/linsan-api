@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Linsan Admin</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -38,6 +38,7 @@
             justify-content: center;
             color: var(--text-primary);
             transition: all 0.3s ease;
+            padding: 10px;
         }
         
         .login-container {
@@ -101,17 +102,24 @@
             max-width: 1400px; 
             background: var(--bg-primary); 
             border-radius: 15px; 
-            overflow: hidden; 
+            overflow: hidden;
+            margin: 10px;
         }
         
         .header { 
             background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%); 
             color: white; 
-            padding: 30px; 
+            padding: 20px; 
             display: flex; 
             justify-content: space-between; 
-            align-items: center; 
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
         }
+        
+        .header-left { display: flex; flex-direction: column; gap: 5px; }
+        .header-left h1 { font-size: 24px; }
+        .header-left .username { font-size: 14px; opacity: 0.9; }
         
         .header-actions { display: flex; gap: 10px; }
         
@@ -126,8 +134,9 @@
         }
         
         .stats { 
-            display: flex; 
-            justify-content: space-around; 
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
             padding: 20px; 
             background: var(--bg-secondary); 
         }
@@ -142,33 +151,69 @@
         .stat-card h3 { color: var(--gradient-start); font-size: 36px; }
         .stat-card p { color: var(--text-secondary); }
         
-        .filters { 
-            padding: 20px; 
-            background: var(--bg-secondary); 
-            display: flex; 
-            gap: 15px; 
-            flex-wrap: wrap; 
+        .tabs {
+            display: flex;
+            background: var(--bg-secondary);
+            border-bottom: 2px solid var(--border-color);
         }
         
-        select, input[type="text"], input[type="date"] { 
+        .tab {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .tab.active {
+            color: var(--gradient-start);
+            border-bottom: 3px solid var(--gradient-start);
+        }
+        
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        
+        .filters { 
+            padding: 15px; 
+            background: var(--bg-secondary); 
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px; 
+        }
+        
+        select, input[type="text"], input[type="date"], textarea { 
             padding: 10px 15px; 
             border: 2px solid var(--border-color); 
             border-radius: 8px;
             background: var(--bg-card);
             color: var(--text-primary);
+            font-family: inherit;
+            width: 100%;
         }
         
-        .filter-btn {
+        textarea { min-height: 100px; resize: vertical; }
+        
+        .btn {
             padding: 10px 20px;
             background: var(--gradient-start);
             color: white;
             border: none;
             border-radius: 8px;
             cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
         }
         
-        .feedback-list { 
-            padding: 20px; 
+        .btn:hover { opacity: 0.9; }
+        .btn-danger { background: #c62828; }
+        .btn-success { background: #2e7d32; }
+        
+        .content-area { 
+            padding: 15px; 
             max-height: 600px; 
             overflow-y: auto; 
             background: var(--bg-secondary);
@@ -182,7 +227,18 @@
             margin-bottom: 15px; 
         }
         
-        .feedback-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .feedback-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 10px; }
+        
+        .feedback-actions { display: flex; gap: 10px; }
+        .delete-btn { 
+            background: #c62828; 
+            color: white; 
+            border: none; 
+            padding: 5px 15px; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            font-size: 12px;
+        }
         
         .feedback-type { 
             display: inline-block; 
@@ -221,6 +277,27 @@
             font-size: 12px;
             color: var(--text-secondary);
             margin-top: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .update-form { display: grid; gap: 15px; max-width: 600px; }
+        .update-card { 
+            background: var(--bg-card); 
+            border: 2px solid var(--border-color); 
+            border-radius: 12px; 
+            padding: 20px; 
+            margin-bottom: 15px; 
+        }
+        .update-version { font-size: 24px; font-weight: bold; color: var(--gradient-start); }
+        
+        @media (max-width: 768px) {
+            .header { padding: 15px; }
+            .header-left h1 { font-size: 20px; }
+            .stats { grid-template-columns: repeat(2, 1fr); }
+            .filters { grid-template-columns: 1fr; }
+            .tab { font-size: 14px; padding: 12px; }
+            .feedback-word { font-size: 20px; }
+            .content-area { max-height: 500px; }
         }
     </style>
 </head>
@@ -246,7 +323,10 @@
     
     <div class="dashboard" id="dashboard">
         <div class="header">
-            <h1>Linsan Admin</h1>
+            <div class="header-left">
+                <h1>Linsan Admin</h1>
+                <span class="username" id="headerUsername"></span>
+            </div>
             <div class="header-actions">
                 <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
                 <button class="logout-btn" onclick="logout()">Çıkış</button>
@@ -258,27 +338,48 @@
             <div class="stat-card"><h3 id="weekCount">0</h3><p>Bu Hafta</p></div>
             <div class="stat-card"><h3 id="wordCount">0</h3><p>Kelime</p></div>
         </div>
-        <div class="filters">
-            <select id="typeFilter" onchange="displayFeedbacks()">
-                <option value="">Tüm Türler</option>
-                <option value="kelime">Kelime</option>
-                <option value="anlam">Anlam</option>
-                <option value="bug">Bug</option>
-                <option value="öneri">Öneri</option>
-                <option value="soru">Soru</option>
-                <option value="diğer">Diğer</option>
-                <option value="örnek cümle">Örnek Cümle</option>
-            </select>
-            <input type="text" id="wordSearch" placeholder="Kelime ara..." oninput="displayFeedbacks()">
-            <input type="date" id="dateFrom" onchange="displayFeedbacks()">
-            <input type="date" id="dateTo" onchange="displayFeedbacks()">
-            <select id="sortOrder" onchange="displayFeedbacks()">
-                <option value="desc">Yeniden Eskiye</option>
-                <option value="asc">Eskiden Yeniye</option>
-            </select>
-            <button class="filter-btn" onclick="loadFeedbacks()">🔄 Yenile</button>
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('feedbacks')">📋 Geri Bildirimler</button>
+            <button class="tab" onclick="switchTab('updates')">🚀 Güncellemeler</button>
         </div>
-        <div class="feedback-list" id="feedbackList"></div>
+        
+        <div id="feedbacksTab" class="tab-content active">
+            <div class="filters">
+                <select id="typeFilter" onchange="displayFeedbacks()">
+                    <option value="">Tüm Türler</option>
+                    <option value="kelime">Kelime</option>
+                    <option value="anlam">Anlam</option>
+                    <option value="bug">Bug</option>
+                    <option value="öneri">Öneri</option>
+                    <option value="soru">Soru</option>
+                    <option value="diğer">Diğer</option>
+                    <option value="örnek cümle">Örnek Cümle</option>
+                </select>
+                <input type="text" id="wordSearch" placeholder="Kelime ara..." oninput="displayFeedbacks()">
+                <input type="date" id="dateFrom" onchange="displayFeedbacks()">
+                <input type="date" id="dateTo" onchange="displayFeedbacks()">
+                <select id="sortOrder" onchange="displayFeedbacks()">
+                    <option value="desc">Yeniden Eskiye</option>
+                    <option value="asc">Eskiden Yeniye</option>
+                </select>
+                <button class="btn" onclick="loadFeedbacks()">🔄 Yenile</button>
+            </div>
+            <div class="content-area" id="feedbackList"></div>
+        </div>
+        
+        <div id="updatesTab" class="tab-content">
+            <div class="content-area">
+                <div class="update-form">
+                    <h2>Yeni Güncelleme Ekle</h2>
+                    <input type="text" id="newVersion" placeholder="Sürüm (örn: 0.86)">
+                    <input type="text" id="downloadUrl" placeholder="İndirme URL">
+                    <textarea id="changelog" placeholder="Değişiklikler (her satır bir madde)"></textarea>
+                    <button class="btn btn-success" onclick="addUpdate()">➕ Güncelleme Ekle</button>
+                </div>
+                <h2 style="margin-top: 30px;">Mevcut Güncellemeler</h2>
+                <div id="updatesList"></div>
+            </div>
+        </div>
     </div>
     
     <script>
@@ -322,7 +423,7 @@
                 if (data.success) {
                     authToken = data.token;
                     localStorage.setItem('authToken', authToken);
-                    localStorage.setItem('username', data.username);
+                    localStorage.setItem('username', username);
                     showDashboard();
                 } else {
                     document.getElementById('errorMsg').style.display = 'block';
@@ -351,9 +452,25 @@
         }
         
         function showDashboard() {
+            const username = localStorage.getItem('username') || 'Admin';
+            document.getElementById('headerUsername').textContent = `👤 ${username}`;
             document.getElementById('loginScreen').style.display = 'none';
             document.getElementById('dashboard').style.display = 'block';
             loadFeedbacks();
+            loadUpdates();
+        }
+        
+        function switchTab(tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            
+            if (tab === 'feedbacks') {
+                document.querySelectorAll('.tab')[0].classList.add('active');
+                document.getElementById('feedbacksTab').classList.add('active');
+            } else {
+                document.querySelectorAll('.tab')[1].classList.add('active');
+                document.getElementById('updatesTab').classList.add('active');
+            }
         }
         
         function logout() {
@@ -425,10 +542,13 @@
             document.getElementById('feedbackList').innerHTML = filtered.map(f => `
                 <div class="feedback-card">
                     <div class="feedback-header">
-                        <span class="feedback-type type-${f.type}">${f.type}</span>
-                        <span style="color: var(--text-secondary); font-size: 12px;">
-                            v${f.version || 'N/A'}
-                        </span>
+                        <div>
+                            <span class="feedback-type type-${f.type}">${f.type}</span>
+                            <span style="color: var(--text-secondary); font-size: 12px; margin-left: 10px;">
+                                v${f.version || 'N/A'}
+                            </span>
+                        </div>
+                        <button class="delete-btn" onclick="deleteFeedback('${f._id}')">🗑️ Sil</button>
                     </div>
                     ${f.user_data?.word ? `<div class="feedback-word">${f.user_data.word}</div>` : ''}
                     <div class="feedback-message">${f.message}</div>
@@ -439,6 +559,111 @@
                     </div>
                 </div>
             `).join('');
+        }
+        
+        async function deleteFeedback(id) {
+            if (!confirm('Bu geri bildirimi silmek istediğinize emin misiniz?')) return;
+            
+            try {
+                const response = await fetch(`${API_URL}/feedbacks/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                
+                if (response.ok) {
+                    loadFeedbacks();
+                } else {
+                    alert('Silme işlemi başarısız!');
+                }
+            } catch (error) {
+                alert('Hata: ' + error.message);
+            }
+        }
+        
+        async function loadUpdates() {
+            try {
+                const response = await fetch(`${API_URL}/updates/all`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    displayUpdates(data.updates || []);
+                }
+            } catch (error) {
+                console.error('Güncelleme yükleme hatası:', error);
+            }
+        }
+        
+        function displayUpdates(updates) {
+            document.getElementById('updatesList').innerHTML = updates.map(u => `
+                <div class="update-card">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div class="update-version">v${u.version}</div>
+                        <button class="delete-btn" onclick="deleteUpdate('${u._id}')">🗑️ Sil</button>
+                    </div>
+                    <p style="margin: 10px 0; color: var(--text-secondary);">
+                        📅 ${new Date(u.createdAt).toLocaleString('tr-TR')}
+                    </p>
+                    <p style="margin: 10px 0;">🔗 ${u.download_url}</p>
+                    <div style="background: var(--bg-secondary); padding: 15px; border-radius: 8px; margin-top: 10px;">
+                        ${u.changelog.split('\n').map(line => `<div>• ${line}</div>`).join('')}
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        async function addUpdate() {
+            const version = document.getElementById('newVersion').value.trim();
+            const download_url = document.getElementById('downloadUrl').value.trim();
+            const changelog = document.getElementById('changelog').value.trim();
+            
+            if (!version || !download_url || !changelog) {
+                alert('Tüm alanları doldurun!');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_URL}/updates/create`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({ version, download_url, changelog })
+                });
+                
+                if (response.ok) {
+                    document.getElementById('newVersion').value = '';
+                    document.getElementById('downloadUrl').value = '';
+                    document.getElementById('changelog').value = '';
+                    loadUpdates();
+                    alert('Güncelleme eklendi!');
+                } else {
+                    alert('Ekleme başarısız!');
+                }
+            } catch (error) {
+                alert('Hata: ' + error.message);
+            }
+        }
+        
+        async function deleteUpdate(id) {
+            if (!confirm('Bu güncellemeyi silmek istediğinize emin misiniz?')) return;
+            
+            try {
+                const response = await fetch(`${API_URL}/updates/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                
+                if (response.ok) {
+                    loadUpdates();
+                } else {
+                    alert('Silme işlemi başarısız!');
+                }
+            } catch (error) {
+                alert('Hata: ' + error.message);
+            }
         }
         
         initTheme();
