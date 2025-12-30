@@ -415,7 +415,7 @@
                 const response = await fetch(`${API_URL}/login`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username, password })
+                    body: JSON.stringify({ username, password, userType: 'admin' })
                 });
                 
                 const data = await response.json();
@@ -482,7 +482,7 @@
         
         async function loadFeedbacks() {
             try {
-                const response = await fetch(`${API_URL}/feedbacks`, {
+                const response = await fetch(`${API_URL}/feedback`, {
                     headers: { 'Authorization': `Bearer ${authToken}` }
                 });
                 
@@ -624,7 +624,7 @@
             }
             
             try {
-                const response = await fetch(`${API_URL}/updates/create`, {
+                const response = await fetch(`${API_URL}/updates`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
