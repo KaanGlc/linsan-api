@@ -29,27 +29,39 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { username, password } = req.body;
+    const { username, password, userType = 'user' } = req.body;
     const db = await getDb();
     
-    const admin = await db.collection('admins').findOne({ 
+    // Admin veya user kontrolü
+    const collection = userType === 'admin' ? 'admins' : 'users';
+    const user = await db.collection(collection).findOne({ 
       username,
       password: hashPassword(password)
     });
 
-    if (admin) {
+    if (user) {
       const token = crypto.randomBytes(32).toString('hex');
       await db.collection('sessions').insertOne({
         token,
         username,
+        userType,
         createdAt: new Date(),
         expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 saat
       });
       
-      return res.status(200).json({ success: true, token, username: admin.username });
+      return res.status(200).json({ 
+        success: true, 
+        token, 
+        username: user.username,
+        email: user.email,
+        userType
+      });
     }
 
-    return res.status(401).json({ success: false, error: 'Invalid credentials' });
+    return res.status(401).json({ 
+      success: false, 
+      error: userType === 'admin' ? 'Invalid credentials' : 'Kullanıcı adı veya şifre hatalı' 
+    });
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }
