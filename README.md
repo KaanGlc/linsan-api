@@ -50,7 +50,7 @@ Kurulum klasöründe 3 önemli dosya bulunur:
 
 ## 🔗 Bağlantılar
 
-- **Uygulama İndirme:** [GitHub Releases](hhttps://github.com/KaanGlc/linsan-api/releases)
+- **Uygulama İndirme:** [GitHub Releases](https://github.com/KaanGlc/linsan-api/releases)
 - **Destek & Geri Bildirim:** Uygulama içi geri bildirim sistemi
 
 ---
