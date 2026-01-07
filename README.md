@@ -10,7 +10,7 @@ Linsan, İngilizce kelime öğrenmeyi kolaylaştıran interaktif bir quiz uygula
 
 *Aktif Sürüm (Python):*
 - **Frontend:** Python + CustomTkinter
-- **Database:** MongoDB Atlas
+- **Database:** SQLite + MongoDB Atlas
 - **Ses Tanıma:** Vosk (Offline)
 - **Güncelleme Sistemi:** Custom Updater
 
